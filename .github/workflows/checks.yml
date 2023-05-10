@@ -1,0 +1,23 @@
+---
+name: Checks
+
+on: [push]
+
+jobs:
+  test-lint:
+    name: Test and Lint
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Load environment variables
+        run: echo "${{ secrets.ENVIRONMENT_VARIABLES }}" > .env
+      - name: Test
+        run: docker-compose -f docker-compose.local.yml run --rm django sh -c "python manage.py wait_for_db && python manage.py test"
+      - name: Lint
+        run: docker-compose -f docker-compose.local.yml run --rm django sh -c "flake8"
