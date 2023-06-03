@@ -27,7 +27,7 @@ BASE_APPS = [
     "django.contrib.sites",
 ]
 
-LOCAL_APPS = ["core", "user"]
+LOCAL_APPS = ["core", "user", "kriging"]
 
 THIRD_APPS = [
     "drf_spectacular",
