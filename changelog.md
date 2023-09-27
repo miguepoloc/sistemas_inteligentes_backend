@@ -15,5 +15,3 @@
 - Update .env.example file.
 - Updated docstrings in all files.
 - Updated all files according to PEP-8 guidelines.
-
-
