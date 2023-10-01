@@ -53,7 +53,9 @@ class NodesView(APIView):
         serializer = self.serializer_class(node, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Node updated successfully!'}, status=status.HTTP_200_OK)
+            return Response(
+                {'message': f'Node {node.name} with id {node.id} updated successfully!'}, status=status.HTTP_200_OK
+            )
         return Response(
             {'message': 'Node not updated!', "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
@@ -85,23 +87,24 @@ class NodesStorageView(APIView):
         """
         POST method for the NodesStorageView.
         """
-        serializer = self.serializer_class(data=request.data)
+        data = request.data.get('data').split(';') if request.data.get('data') else None
+        if not data:
+            return Response({'message': 'Please provide data!'}, status=status.HTTP_400_BAD_REQUEST)
+
+        data_storage = {
+            'node': data[0],
+            "date_time": data[1],
+            "temperature": data[2],
+            "humidity": data[3],
+            "pressure": data[4],
+            "altitude": data[5],
+        }
+        serializer = self.serializer_class(data=data_storage)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Node data created successfully!'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {'message': f'Node {data_storage["node"]} data created successfully!'}, status=status.HTTP_201_CREATED
+            )
         return Response(
             {'message': 'Node data not created!', "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    def put(self, request):
-        """
-        PUT method for the NodesStorageView.
-        """
-        queryset = self.get_queryset()
-        serializer = self.serializer_class(queryset, many=True, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Node data updated successfully!'}, status=status.HTTP_200_OK)
-        return Response(
-            {'message': 'Node data not updated!', "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
