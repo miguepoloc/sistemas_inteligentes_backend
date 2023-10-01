@@ -6,10 +6,6 @@
       "request": "launch",
       "program": "${workspaceFolder}\\src\\manage.py",
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "DB_PORT": "5432",
-        "DB_HOST": "localhost"
-      },
       "args": ["test", "--noinput"],
       "django": true,
       "justMyCode": true
@@ -20,10 +16,6 @@
       "request": "launch",
       "program": "${workspaceFolder}\\src\\manage.py",
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "DB_PORT": "5432",
-        "DB_HOST": "localhost"
-      },
       "args": ["runserver", "0.0.0.0:8001"],
       "django": true,
       "justMyCode": true
@@ -34,10 +26,6 @@
       "request": "launch",
       "program": "${workspaceFolder}\\src\\manage.py",
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "DB_PORT": "5432",
-        "DB_HOST": "localhost"
-      },
       "args": ["makemigrations"],
       "django": true,
       "justMyCode": true
@@ -48,10 +36,6 @@
       "request": "launch",
       "program": "${workspaceFolder}\\src\\manage.py",
       "envFile": "${workspaceFolder}/.env",
-      "env": {
-        "DB_PORT": "5432",
-        "DB_HOST": "localhost"
-      },
       "args": ["migrate"],
       "django": true,
       "justMyCode": true
