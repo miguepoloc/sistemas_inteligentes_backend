@@ -1,5 +1,4 @@
 boto3==1.26.118
-boto3==1.26.118
 coverage==7.2.7
 dj-rest_auth==4.0.1
 django-anymail==9.1
