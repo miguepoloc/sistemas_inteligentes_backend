@@ -4,7 +4,7 @@ File that contains the urls of the nodes app.
 
 from django.urls import path
 
-from nodes.views import NodesView, NodesStorageView
+from nodes.views import NodesStorageView, NodesView
 
 APP_NAME = 'nodes'
 
