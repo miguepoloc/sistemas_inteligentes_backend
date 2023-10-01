@@ -45,14 +45,19 @@ class NodesView(APIView):
         """
         PUT method for the NodesView.
         """
-        queryset = self.get_queryset()
-        serializer = self.serializer_class(queryset, many=True, partial=True)
+        try:
+            node = Nodes.objects.get(id=request.data.get('id'))
+        except Nodes.DoesNotExist:
+            return Response({'message': 'Node not found!'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(node, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'Node updated successfully!'}, status=status.HTTP_200_OK)
         return Response(
             {'message': 'Node not updated!', "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
+
 
 class NodesStorageView(APIView):
     """
