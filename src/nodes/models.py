@@ -59,10 +59,10 @@ class NodesStorage(BaseModel):
 
     node = models.ForeignKey(Nodes, on_delete=models.CASCADE)
     date_time = models.DateTimeField()
-    temperature = models.DecimalField(max_digits=5, decimal_places=2)
-    humidity = models.DecimalField(max_digits=5, decimal_places=2)
-    pressure = models.DecimalField(max_digits=5, decimal_places=2)
-    altitude = models.DecimalField(max_digits=5, decimal_places=2)
+    temperature = models.DecimalField(max_digits=10, decimal_places=2)
+    humidity = models.DecimalField(max_digits=10, decimal_places=2)
+    pressure = models.DecimalField(max_digits=10, decimal_places=2)
+    altitude = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
         """
