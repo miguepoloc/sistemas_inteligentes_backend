@@ -107,7 +107,7 @@ class NodesStorageView(APIView):
         Returns:
         - Response: The serialized data response.
         """
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().order_by("-created_at")
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
