@@ -107,7 +107,7 @@ class NodesStorageView(APIView):
         Returns:
         - Response: The serialized data response.
         """
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().order_by("-created_at")
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
@@ -121,24 +121,30 @@ class NodesStorageView(APIView):
         Returns:
         - Response: The success or error message response.
         """
-        data = request.data.get('data').split(';') if request.data.get('data') else None
-        if not data:
+        request_data = request.body.decode('utf-8').split('\n') if request.body else None
+        if not request_data:
             return Response({'message': 'Please provide data!'}, status=status.HTTP_400_BAD_REQUEST)
 
-        data_storage = {
-            'node': data[0],
-            "date_time": data[1],
-            "temperature": data[2],
-            "humidity": data[3],
-            "pressure": data[4],
-            "altitude": data[5],
-        }
-        serializer = self.serializer_class(data=data_storage)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {'message': f'Node {data_storage["node"]} data created successfully!'}, status=status.HTTP_201_CREATED
-            )
-        return Response(
-            {'message': 'Node data not created!', "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-        )
+        responses = []
+        for item in request_data:
+            data = item.split(';')
+            try:
+                data_storage = {
+                    'node': data[0],
+                    "date_time": data[1],
+                    "temperature": data[2],
+                    "humidity": data[3],
+                    "pressure": data[4],
+                    "altitude": data[5],
+                }
+            except IndexError:
+                return Response({'message': 'Format data is not correct!'}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = self.serializer_class(data=data_storage)
+            if serializer.is_valid():
+                serializer.save()
+                responses.append(f'Node {data_storage["node"]} data created successfully!')
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'messages': responses}, status=status.HTTP_201_CREATED)

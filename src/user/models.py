@@ -1,8 +1,12 @@
 """
 Models for core app.
 """
+
+from random import randint
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 
 from core.models import BaseModel
@@ -38,6 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     """User in the system."""
 
     email = models.EmailField(max_length=255, unique=True)
+    username = models.CharField(max_length=100, unique=True, blank=True, null=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     document = models.CharField(max_length=50, blank=True)
@@ -70,3 +75,15 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+    def save(self, *args, **kwargs):
+        """Override the save method to generate username from email."""
+        if not self.username:
+            # Generate username from email
+            username = slugify(self.email.split('@')[0])
+            # Check if username already exists
+            if User.objects.filter(username=username).exists():
+                # Append a random number to the username
+                username = f"{username}-{randint(1000, 9999)}"
+            self.username = username
+        super().save(*args, **kwargs)
