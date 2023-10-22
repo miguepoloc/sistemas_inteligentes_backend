@@ -34,4 +34,4 @@ ENV PATH="/py/bin:$PATH"
 
 USER django-user
 
-CMD ["sh", "-c", "python3 manage.py wait_for_db && python3 manage.py runserver 0.0.0.0:8000"]
+CMD ["sh", "-c", "python3 manage.py wait_for_db && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"]
