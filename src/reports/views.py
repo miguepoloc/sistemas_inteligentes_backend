@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from reports.serializers import VisitorsSerializer
+from reports.utils import get_ip_info
 
 
 class VisitorsView(APIView):
@@ -27,9 +28,19 @@ class VisitorsView(APIView):
         Returns:
             Response: A response indicating whether the visitor was created successfully or not.
         """
-        data = request.data
+        data = {}
         if request.user.is_authenticated:
             data['user'] = request.user.id
+        ip_info = get_ip_info(request.META.get('REMOTE_ADDR'))
+        data['ip_address'] = ip_info.ip
+        try:
+            data['latitude'] = ip_info.latitude
+            data['longitude'] = ip_info.longitude
+            data['city'] = ip_info.city
+            data['region'] = ip_info.region
+            data['country'] = ip_info.country_name
+        except AttributeError:
+            pass
         serializer = VisitorsSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
