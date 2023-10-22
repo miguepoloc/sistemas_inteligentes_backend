@@ -20,9 +20,26 @@ class VisitorsSerializer(serializers.ModelSerializer):
         model = Visitors
         fields = '__all__'
 
+    def validate(self, attrs: dict) -> dict:
+        """
+        Validate the data before creating a new visitor.
 
-    def validate(self, attrs):
+        Args:
+            attrs (dict): The data to validate.
+
+        Returns:
+            dict: The validated data.
+        """
         return super().validate(attrs)
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> Visitors:
+        """
+        Create a new visitor.
+
+        Args:
+            validated_data (dict): The validated data.
+
+        Returns:
+            Visitors: The newly created visitor.
+        """
         return super().create(validated_data)
