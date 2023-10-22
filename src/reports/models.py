@@ -40,4 +40,3 @@ class Visitors(BaseModel):
         """
 
         db_table = 'visitors'
-        ordering = ['-created_at']
