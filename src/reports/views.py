@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from reports.models import Visitors
 from reports.serializers import VisitorsSerializer
-from reports.utils import get_ip_info
+from user.models import User
 
 
 class VisitorsView(APIView):
@@ -30,18 +30,14 @@ class VisitorsView(APIView):
             Response: A response indicating whether the visitor was created successfully or not.
         """
         data = {}
+        page = request.data.get('page')
+        if not page:
+            return Response({'message': 'Page is required'}, status=status.HTTP_400_BAD_REQUEST)
         if request.user.is_authenticated:
             data['user'] = request.user.id
-        ip_info = get_ip_info(request.META.get('REMOTE_ADDR'))
-        data['ip_address'] = ip_info.ip
-        try:
-            data['latitude'] = ip_info.latitude
-            data['longitude'] = ip_info.longitude
-            data['city'] = ip_info.city
-            data['region'] = ip_info.region
-            data['country'] = ip_info.country_name
-        except AttributeError:
-            pass
+        data['ip_address'] = request.META.get('REMOTE_ADDR')
+        data['page'] = page
+
         serializer = VisitorsSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -52,7 +48,7 @@ class VisitorsView(APIView):
 
     def get(self, request):
         """
-        Handles GET requests and returns the total number of visitors and the total number of distinct visitors.
+        Handles GET requests and returns the visitors.
 
         Parameters:
             request (HttpRequest): The HTTP request object.
@@ -61,11 +57,48 @@ class VisitorsView(APIView):
             Response: A response containing all the visitors.
         """
         visitors = Visitors.objects.all()
+        pages = visitors.values('page').distinct()
         visitors_distinct = visitors.distinct('ip_address')
-        return Response(
+        users = User.objects.all()
+        citys = users.values('city').distinct()
+        data = [
             {
-                'total_visitors': visitors.count(),
-                'total_visitors_distinct': visitors_distinct.count(),
+                "category": "Visitas",
+                "count": visitors.count(),
+                "data": [],
             },
-            status=status.HTTP_200_OK,
-        )
+            {
+                "category": "Visitantes",
+                "count": visitors_distinct.count(),
+                "data": [],
+            },
+            {
+                "category": "Usuarios",
+                "count": users.count(),
+                "data": [],
+            },
+        ]
+
+        for page in pages:
+            data[0]['data'].append(
+                {
+                    "name": page['page'],
+                    "value": visitors.filter(page=page['page']).count(),
+                }
+            )
+            data[1]['data'].append(
+                {
+                    "name": page['page'],
+                    "value": visitors_distinct.filter(page=page['page']).count(),
+                }
+            )
+        for city in citys:
+            data[2]['data'].append(
+                {
+                    "name": city['city'],
+                    "value": users.filter(city=city['city']).count(),
+                }
+            )
+        for item in data:
+            item['data'] = sorted(item['data'], key=lambda x: x['value'], reverse=True)
+        return Response(data=data, status=status.HTTP_200_OK)
