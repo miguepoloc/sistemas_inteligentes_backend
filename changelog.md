@@ -1,5 +1,13 @@
 ## **Changelog Sistemas Inteligentes**
 
+## 23-10-2023 (1.0.4)
+
+### New features
+
+-   Add city in User model.
+-   Remove ipinfo lib.
+-   Change method to get info about visitor.
+
 ## 22-10-2023 (1.0.2)
 
 ### New features
