@@ -51,6 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     profile_image = models.CharField(max_length=250, blank=True)
+    city = models.CharField(max_length=100, blank=True)
     historical = HistoricalRecords()
     objects = UserManager()
 
