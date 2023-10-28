@@ -5,10 +5,10 @@ from django.urls import path
 
 from user.views import UserDetailView, UserListView, UserView
 
-APP_NAME = 'user'
+app_name = 'user'
 
 urlpatterns = [
-    path('', UserView.as_view(), name='user_list'),
+    path('', UserView.as_view(), name='user'),
     path('list/', UserListView.as_view(), name='user_list'),
     path('detail/', UserDetailView.as_view(), name='user_detail'),
 ]
