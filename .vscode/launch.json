@@ -1,22 +1,50 @@
 {
     "configurations": [
         {
-            "name": "API LOCAL",
+            "name": "RUNSERVER OSX",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}\\src\\manage.py",
+            "program": "${workspaceFolder}/src/manage.py",
             "envFile": "${workspaceFolder}/.env",
             "args": ["runserver", "0.0.0.0:8001"],
             "django": true,
             "justMyCode": true
         },
         {
-            "name": "TEST",
+            "name": "TEST LOCAL",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}\\src\\manage.py",
             "envFile": "${workspaceFolder}/.env",
             "args": ["test", "--noinput"],
+            "django": true,
+            "justMyCode": true
+        },
+        {
+            "name": "TEST OSX",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/manage.py",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "test", // No include modules to execute all tests
+                "user", // Para probar un modulo especifico
+                // "apps.user.tests.test_user", // Para probar una clase completa
+                // "user.tests.test_user.TestsUserApi.test_update_user", // Para Para usar una prueba especifica
+                // "--keepdb", // Solo para pruebas mas rapidas locales no borra la bd
+                "--noinput", // No confirmar si se desea borrar la bbdd
+                "--timing" // Se incluye para mostrar los tiempos de las pruebas
+            ],
+            "django": true,
+            "justMyCode": true
+        },
+        {
+            "name": "API LOCAL",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}\\src\\manage.py",
+            "envFile": "${workspaceFolder}/.env",
+            "args": ["runserver", "0.0.0.0:8001"],
             "django": true,
             "justMyCode": true
         },

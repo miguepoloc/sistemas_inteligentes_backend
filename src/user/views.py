@@ -4,13 +4,13 @@ File with the user views.
 
 import os
 
+from core.utils import send_email
 from django.template.loader import render_to_string
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.utils import send_email
 from user.models import User
 from user.serializers import UserSerializer
 
@@ -91,10 +91,10 @@ class UserView(APIView):
                     {"message": "Error updating user, email already exists"}, status=status.HTTP_400_BAD_REQUEST
                 )
         if request.data.get('phone_number') and request.data.get('code_phone'):
-            user = User.objects.filter(
+            user_phone = User.objects.filter(
                 phone_number=request.data['phone_number'], code_phone=request.data['code_phone']
             ).first()
-            if user and user.id != user_id:
+            if user_phone and user_phone.id != user_id:
                 return Response(
                     {"message": "Error updating user, phone number already exists"}, status=status.HTTP_400_BAD_REQUEST
                 )
