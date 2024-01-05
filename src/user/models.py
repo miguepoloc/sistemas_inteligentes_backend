@@ -3,9 +3,10 @@ Models for core app.
 """
 
 
-from core.models import BaseModel
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+
+from core.models import BaseModel
 
 
 class UserManager(BaseUserManager):

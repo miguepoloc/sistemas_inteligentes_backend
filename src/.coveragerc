@@ -1,7 +1,17 @@
 [run]
 omit =
+    */config/*
     config/asgi.py
-    config/settings/dev.py
-    config/settings/prod.py
+    config/settings/develop.py
+    config/settings/production.py
     config/wsgi.py
+    */migrations/*
+    */models/*
+    urls.py
+    apps.py
+    **/__init__.py
+    *test*
     manage.py
+    models.py
+    routers.py
+    admin.py

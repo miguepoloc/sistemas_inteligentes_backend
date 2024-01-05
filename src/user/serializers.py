@@ -45,9 +45,6 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
         }
 
-    def validate(self, attrs):
-        return super().validate(attrs)
-
     def create(self, validated_data):
         """
         Create and return a user with encrypted password.

@@ -5,7 +5,7 @@ from django.urls import path
 
 from user.views import UserDetailView, UserListView, UserView
 
-app_name = 'user'
+app_name = 'user'  # pylint: disable=C0103
 
 urlpatterns = [
     path('', UserView.as_view(), name='user'),
