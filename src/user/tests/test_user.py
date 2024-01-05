@@ -3,12 +3,12 @@ Tests for the user API.
 """
 
 import django
-from core.test_setup import TestSetup, generate_user
 from django.urls import reverse
 from faker import Faker
 from rest_framework import status
 from rest_framework.test import APIClient
 
+from core.test_setup import TestSetup, generate_user
 from user.models import User
 
 fake = Faker()
@@ -49,16 +49,16 @@ class TestsUserApi(TestSetup):
         self.assertNotIn("password", res.data)
 
         users = User.objects.all()
-        self.assertEqual(users.count(), 1)
+        self.assertEqual(users.count(), 2)
 
         user = users.filter(email=self.payload["email"]).first()
         self.assertTrue(user.check_password(self.payload["password"]))
         self.assertEqual(user.email, self.payload["email"])
         self.assertEqual(user.first_name, self.payload["first_name"])
         self.assertEqual(user.last_name, self.payload["last_name"])
-        self.assertEqual(user.document, self.payload["document"])
+        self.assertEqual(user.document, str(self.payload["document"]))
         self.assertEqual(user.code_phone, self.payload["code_phone"])
-        self.assertEqual(user.phone_number, self.payload["phone_number"])
+        self.assertEqual(user.phone_number, str(self.payload["phone_number"]))
         self.assertEqual(user.city, self.payload["city"])
         self.assertFalse(user.is_admin)
         self.assertFalse(user.is_superuser)

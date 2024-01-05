@@ -4,13 +4,13 @@ File with the user views.
 
 import os
 
-from core.utils import send_email
 from django.template.loader import render_to_string
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.utils import send_email
 from user.models import User
 from user.serializers import UserSerializer
 
@@ -29,7 +29,7 @@ class UserView(APIView):
 
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def post(self, request) -> Response:
         """
         Create a new user.
 
@@ -61,7 +61,7 @@ class UserView(APIView):
                 context = {"first_name": request.data['first_name'], "url_frontend": os.environ.get("URL_FRONTEND")}
                 html_content = render_to_string("welcome.html", context)
                 to_send_email = [{"email": request.data['email'], "name": request.data['first_name']}]
-                send_email("Welcome to Name_APP", html_content, to_send_email)
+                send_email("Welcome to Sistemas Inteligentes", html_content, to_send_email)
 
                 return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
             except Exception as e:
