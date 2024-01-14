@@ -29,7 +29,7 @@ class UserView(APIView):
 
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def post(self, request) -> Response:
         """
         Create a new user.
 
@@ -61,7 +61,7 @@ class UserView(APIView):
                 context = {"first_name": request.data['first_name'], "url_frontend": os.environ.get("URL_FRONTEND")}
                 html_content = render_to_string("welcome.html", context)
                 to_send_email = [{"email": request.data['email'], "name": request.data['first_name']}]
-                send_email("Welcome to Name_APP", html_content, to_send_email)
+                send_email("Welcome to Sistemas Inteligentes", html_content, to_send_email)
 
                 return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
             except Exception as e:
@@ -91,10 +91,10 @@ class UserView(APIView):
                     {"message": "Error updating user, email already exists"}, status=status.HTTP_400_BAD_REQUEST
                 )
         if request.data.get('phone_number') and request.data.get('code_phone'):
-            user = User.objects.filter(
+            user_phone = User.objects.filter(
                 phone_number=request.data['phone_number'], code_phone=request.data['code_phone']
             ).first()
-            if user and user.id != user_id:
+            if user_phone and user_phone.id != user_id:
                 return Response(
                     {"message": "Error updating user, phone number already exists"}, status=status.HTTP_400_BAD_REQUEST
                 )

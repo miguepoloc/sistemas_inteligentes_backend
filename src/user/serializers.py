@@ -7,9 +7,6 @@ from rest_framework.exceptions import ValidationError
 
 from user.models import User
 
-# Get the User model
-UserModel = get_user_model()
-
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -31,8 +28,22 @@ class UserSerializer(serializers.ModelSerializer):
         """
 
         model = User
-        fields = "__all__"
-        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "document",
+            "code_phone",
+            "phone_number",
+            "profile_image",
+            "city",
+            "created_at",
+            "password",
+        )
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
     def create(self, validated_data):
         """
