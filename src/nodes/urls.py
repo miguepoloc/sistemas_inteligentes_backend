@@ -6,7 +6,7 @@ from django.urls import path
 
 from nodes.views import NodesStorageView, NodesView
 
-APP_NAME = 'nodes'
+app_name = 'nodes'  # pylint: disable=C0103
 
 urlpatterns = [
     path('', NodesView.as_view(), name='nodes_list'),
