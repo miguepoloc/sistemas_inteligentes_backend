@@ -136,6 +136,15 @@ class NodesStorageView(APIView):
                     "humidity": data[3],
                     "pressure": data[4],
                     "altitude": data[5],
+                    "humidity_hd38": data[6],
+                    "humidity_soil": data[7],
+                    "temperature_soil": data[8],
+                    "conductivity_soil": data[9],
+                    "ph_soil": data[10],
+                    "nitrogen_soil": data[11],
+                    "phosphorus_soil": data[12],
+                    "potassium_soil": data[13],
+                    "battery_level": data[14],
                 }
             except IndexError:
                 return Response({'message': 'Format data is not correct!'}, status=status.HTTP_400_BAD_REQUEST)
