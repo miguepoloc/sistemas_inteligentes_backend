@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.pagination import CustomPaginationClass
 from nodes.models import Nodes, NodesStorage
 from nodes.serializers import NodesSerializer, NodesStorageSerializer
 
@@ -14,6 +15,10 @@ from nodes.serializers import NodesSerializer, NodesStorageSerializer
 class NodesView(APIView):
     """
     A Django REST Framework view for the Nodes model.
+
+    Attributes:
+        permission_classes (tuple): A tuple of permission classes that the view requires.
+        serializer_class (NodesSerializer): The serializer class to use for serializing and deserializing data.
     """
 
     permission_classes = (AllowAny,)
@@ -25,7 +30,7 @@ class NodesView(APIView):
         """
         return Nodes.objects.filter(is_active=True)
 
-    def get(self, request):
+    def get(self, request) -> Response:
         """
         Handles GET requests and returns a serialized response of all nodes.
 
@@ -39,7 +44,7 @@ class NodesView(APIView):
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
-    def post(self, request):
+    def post(self, request) -> Response:
         """
         Handles POST requests and creates a new node if the data is valid.
 
@@ -86,10 +91,16 @@ class NodesView(APIView):
 class NodesStorageView(APIView):
     """
     A Django REST Framework view for handling GET and POST requests for the NodesStorage model.
+
+    Attributes:
+        permission_classes (tuple): A tuple of permission classes that the view requires.
+        serializer_class (NodesStorageSerializer): The serializer class to use for serializing and deserializing data.
+        pagination_class (CustomPaginationClass): The pagination class to use for paginating the data.
     """
 
     permission_classes = (AllowAny,)
     serializer_class = NodesStorageSerializer
+    pagination_class = CustomPaginationClass
 
     def get_queryset(self):
         """
@@ -97,7 +108,7 @@ class NodesStorageView(APIView):
         """
         return NodesStorage.objects.filter(is_active=True)
 
-    def get(self, request):
+    def get(self, request) -> Response:
         """
         Handles GET requests. Retrieves the queryset, serializes the data, and returns the response.
 
@@ -108,6 +119,13 @@ class NodesStorageView(APIView):
         - Response: The serialized data response.
         """
         queryset = self.get_queryset().order_by("-created_at")
+        paginator = self.pagination_class()
+
+        page = paginator.paginate_queryset(queryset, request)
+
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
@@ -136,6 +154,15 @@ class NodesStorageView(APIView):
                     "humidity": data[3],
                     "pressure": data[4],
                     "altitude": data[5],
+                    "humidity_hd38": data[6],
+                    "humidity_soil": data[7],
+                    "temperature_soil": data[8],
+                    "conductivity_soil": data[9],
+                    "ph_soil": data[10],
+                    "nitrogen_soil": data[11],
+                    "phosphorus_soil": data[12],
+                    "potassium_soil": data[13],
+                    "battery_level": data[14],
                 }
             except IndexError:
                 return Response({'message': 'Format data is not correct!'}, status=status.HTTP_400_BAD_REQUEST)
