@@ -55,6 +55,15 @@ class NodesStorage(BaseModel):
     - humidity: A DecimalField representing the humidity value.
     - pressure: A DecimalField representing the pressure value.
     - altitude: A DecimalField representing the altitude value.
+    - humidity_hd38: A DecimalField representing the humidity_hd38 value.
+    - humidity_soil: A DecimalField representing the humidity_soil value.
+    - temperature_soil: A DecimalField representing the temperature_soil value.
+    - conductivity_soil: A DecimalField representing the conductivity_soil value.
+    - ph_soil: A DecimalField representing the ph_soil value.
+    - nitrogen_soil: A DecimalField representing the nitrogen_soil value.
+    - phosphorus_soil: A DecimalField representing the phosphorus_soil value.
+    - potassium_soil: A DecimalField representing the potassium_soil value.
+    - battery_level: A DecimalField representing the battery_level value.
     """
 
     node = models.ForeignKey(Nodes, on_delete=models.CASCADE)
@@ -63,6 +72,15 @@ class NodesStorage(BaseModel):
     humidity = models.DecimalField(max_digits=10, decimal_places=2)
     pressure = models.DecimalField(max_digits=10, decimal_places=2)
     altitude = models.DecimalField(max_digits=10, decimal_places=2)
+    humidity_hd38 = models.DecimalField(max_digits=10, decimal_places=2)
+    humidity_soil = models.DecimalField(max_digits=10, decimal_places=2)
+    temperature_soil = models.DecimalField(max_digits=10, decimal_places=2)
+    conductivity_soil = models.DecimalField(max_digits=10, decimal_places=2)
+    ph_soil = models.DecimalField(max_digits=10, decimal_places=2)
+    nitrogen_soil = models.DecimalField(max_digits=10, decimal_places=2)
+    phosphorus_soil = models.DecimalField(max_digits=10, decimal_places=2)
+    potassium_soil = models.DecimalField(max_digits=10, decimal_places=2)
+    battery_level = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
         """

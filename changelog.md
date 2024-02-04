@@ -1,5 +1,12 @@
 ## **Changelog Sistemas Inteligentes**
 
+## 04-02-2024 (1.1.0)
+
+### New features
+
+-   Add new variables in model Node to save the soil conditions.
+-   Add template in home page
+
 ## 23-10-2023 (1.0.4)
 
 ### New features
