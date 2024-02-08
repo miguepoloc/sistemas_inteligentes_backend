@@ -2,9 +2,8 @@
 File that contains the Django models for the nodes app.
 """
 
-from django.db import models
-
 from core.models import BaseModel
+from django.db import models
 
 
 class Nodes(BaseModel):
@@ -89,3 +88,60 @@ class NodesStorage(BaseModel):
 
         db_table = 'nodes_storage'
         ordering = ['-date_time']
+
+
+class WeatherStation(BaseModel):
+    """
+    A class representing a weather station.
+
+    This class inherits from the BaseModel class and provides fields to store various weather data measurements such as
+    temperature, dew point, solar radiation, vapor pressure deficit, relative humidity, precipitation, wind speed,
+    wind gust, wind direction, solar panel status, battery status, delta T, sun duration, evapotranspiration, and units.
+
+    Fields:
+    - date: A DateTimeField that stores the date and time of the weather measurement. It is unique for each instance.
+    - temperature: A FloatField that stores the temperature measurement.
+    - dew_point: A FloatField that stores the dew point measurement.
+    - solar_radiation: An IntegerField that stores the solar radiation measurement.
+    - vapor_pressure_deficit: A FloatField that stores the vapor pressure deficit measurement.
+    - relative_humidity: A FloatField that stores the relative humidity measurement.
+    - precipitation: A FloatField that stores the precipitation measurement.
+    - wind_speed: A FloatField that stores the wind speed measurement.
+    - wind_gust: A FloatField that stores the wind gust measurement.
+    - wind_direction: An IntegerField that stores the wind direction measurement.
+    - solar_panel: An IntegerField that stores the status of the solar panel.
+    - battery: An IntegerField that stores the status of the battery.
+    - delta_t: An IntegerField that stores the delta T measurement.
+    - sun_duration: An IntegerField that stores the sun duration measurement.
+    - evapotranspiration: A FloatField that stores the evapotranspiration measurement. It can be null.
+    - units: A JSONField that stores the units of measurement for each field.
+
+    Meta:
+    - db_table: The name of the database table for this model is 'weather_station'.
+    - ordering: The default ordering for instances of this model is based on the 'date' field in descending order.
+    """
+
+    date = models.DateTimeField(unique=True)
+    temperature = models.FloatField()
+    dew_point = models.FloatField()
+    solar_radiation = models.IntegerField()
+    vapor_pressure_deficit = models.FloatField()
+    relative_humidity = models.FloatField()
+    precipitation = models.FloatField()
+    wind_speed = models.FloatField()
+    wind_gust = models.FloatField()
+    wind_direction = models.IntegerField()
+    solar_panel = models.IntegerField()
+    battery = models.IntegerField()
+    delta_t = models.IntegerField()
+    sun_duration = models.IntegerField()
+    evapotranspiration = models.FloatField(null=True)
+    units = models.JSONField()
+
+    class Meta:
+        """
+        Meta class for the WeatherStation model.
+        """
+
+        db_table = 'weather_station'
+        ordering = ['-date']
