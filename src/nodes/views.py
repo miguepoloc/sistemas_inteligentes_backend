@@ -2,14 +2,14 @@
 File for the Nodes views.
 """
 
+from core.pagination import CustomPaginationClass
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.pagination import CustomPaginationClass
 from nodes.models import Nodes, NodesStorage
-from nodes.serializers import NodesSerializer, NodesStorageSerializer
+from nodes.serializers import NodesSerializer, NodesStorageSerializer, WeatherStationSerializer
 
 
 class NodesView(APIView):
@@ -175,3 +175,37 @@ class NodesStorageView(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'messages': responses}, status=status.HTTP_201_CREATED)
+
+
+class WeatherStationView(APIView):
+    """
+    A Django REST Framework view for the Nodes model.
+
+    Attributes:
+        permission_classes (tuple): A tuple of permission classes that the view requires.
+        serializer_class (NodesSerializer): The serializer class to use for serializing and deserializing data.
+    """
+
+    permission_classes = (AllowAny,)
+    serializer_class = WeatherStationSerializer
+
+    def post(self, request) -> Response:
+        """
+        Handles POST requests and uploads a document.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            Response: A response indicating whether the document was uploaded successfully or not.
+        """
+        document = request.data.get('document')
+        serializer = self.serializer_class(data={'document': document})
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Document uploaded successfully"}, status=status.HTTP_201_CREATED)
+
+        return Response(
+            {"error": "Error uploading document", "details": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
