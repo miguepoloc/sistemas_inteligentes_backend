@@ -2,6 +2,8 @@
 File for the Nodes views.
 """
 
+import datetime
+
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -141,7 +143,10 @@ class NodesStorageView(APIView):
         """
         request_data = request.body.decode('utf-8').split('\n') if request.body else None
         if not request_data:
-            return Response({'message': 'Please provide data!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'message': 'Please provide data!', "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         responses = []
         for item in request_data:
@@ -165,7 +170,13 @@ class NodesStorageView(APIView):
                     "battery_level": data[14],
                 }
             except IndexError:
-                return Response({'message': 'Format data is not correct!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {
+                        'message': 'Format data is not correct!',
+                        "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             serializer = self.serializer_class(data=data_storage)
             if serializer.is_valid():
@@ -174,4 +185,7 @@ class NodesStorageView(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({'messages': responses}, status=status.HTTP_201_CREATED)
+        return Response(
+            {'messages': responses, "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+            status=status.HTTP_201_CREATED,
+        )
