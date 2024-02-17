@@ -8,8 +8,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from nodes.models import Nodes, NodesStorage
-from nodes.serializers import NodesSerializer, NodesStorageSerializer, WeatherStationSerializer
+from nodes.models import Nodes, NodesStorage, WeatherStation
+from nodes.serializers import (
+    DataWeatherStationSerializer,
+    NodesSerializer,
+    NodesStorageSerializer,
+    WeatherStationSerializer,
+)
 
 
 class NodesView(APIView):
@@ -187,7 +192,8 @@ class WeatherStationView(APIView):
     """
 
     permission_classes = (AllowAny,)
-    serializer_class = WeatherStationSerializer
+    pagination_class = CustomPaginationClass
+    get_queryset = WeatherStation.objects.all()
 
     def post(self, request) -> Response:
         """
@@ -200,7 +206,7 @@ class WeatherStationView(APIView):
             Response: A response indicating whether the document was uploaded successfully or not.
         """
         document = request.data.get('document')
-        serializer = self.serializer_class(data={'document': document})
+        serializer = WeatherStationSerializer(data={'document': document})
 
         if serializer.is_valid():
             serializer.save()
@@ -209,3 +215,23 @@ class WeatherStationView(APIView):
         return Response(
             {"error": "Error uploading document", "details": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
         )
+
+    def get(self, request) -> Response:
+        """
+        Handles GET requests and returns a serialized response of all documents.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            Response: A serialized response of all documents.
+        """
+        paginator = self.pagination_class()
+
+        page = paginator.paginate_queryset(self.get_queryset, request)
+
+        if page is not None:
+            serializer = DataWeatherStationSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = self.serializer_class(self.get_queryset, many=True)
+        return Response(serializer.data)
