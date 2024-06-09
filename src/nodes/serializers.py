@@ -2,6 +2,11 @@
 File with serializers for the nodes app.
 """
 
+from datetime import datetime
+from typing import Union
+
+from django.core.files.uploadedfile import UploadedFile
+from django.utils import timezone
 from rest_framework import serializers
 
 from nodes.models import Nodes, NodesStorage, WeatherStation
@@ -55,7 +60,7 @@ class DataWeatherStationSerializer(serializers.ModelSerializer):
         model = WeatherStation
         fields = '__all__'
 
-    def create(self, validated_data: dict) -> [WeatherStation, None]:
+    def create(self, validated_data: dict) -> Union[WeatherStation, None]:
         """
         Create a new DataWeatherStation object.
 
@@ -138,3 +143,67 @@ class WeatherStationSerializer(serializers.Serializer):
         if not data_weather_station_serializer.is_valid():
             raise serializers.ValidationError(data_weather_station_serializer.errors)
         return data_weather_station_serializer.save()
+
+
+class NodesStorageTxtSerializer(serializers.Serializer):
+    document = serializers.FileField()
+
+    def validate_document(self, value: UploadedFile) -> UploadedFile:
+            """
+            Validates the uploaded document file.
+
+            Args:
+                value (UploadedFile): The uploaded file object.
+
+            Returns:
+                UploadedFile: The validated file object.
+
+            Raises:
+                serializers.ValidationError: If the file is not in .txt format.
+            """
+            if value.name.endswith('.txt'):
+                return value
+            raise serializers.ValidationError("The file must be in .txt format")
+
+    def create(self, validated_data) -> list:
+        txt_data = validated_data['document'].read()
+        responses = []
+        for item in str(txt_data).split("\\n"):
+            if not item or item.startswith("b'ID_NODO") or item == "'":
+                continue
+            data = item.split(';')
+            try:
+                node = int(data[0])
+
+                defaults = {
+                    "temperature": data[2],
+                    "humidity": data[3],
+                    "pressure": data[4],
+                    "altitude": data[5],
+                    "humidity_hd38": data[6],
+                    "humidity_soil": data[7],
+                    "temperature_soil": data[8],
+                    "conductivity_soil": data[9],
+                    "ph_soil": data[10],
+                    "nitrogen_soil": data[11],
+                    "phosphorus_soil": data[12],
+                    "potassium_soil": data[13],
+                    "battery_level": data[14],
+                }
+                date_time_naive = datetime.strptime(data[1], "%Y-%m-%dT%H:%M:%S")
+                date_time_aware = timezone.make_aware(date_time_naive)
+
+                defaults["date_time"] = date_time_aware
+
+                node = Nodes.objects.get(id=node)  # Obtiene la instancia del nodo
+
+                defaults['node'] = node  # Asigna la instancia del nodo a data_storage
+
+                NodesStorage.objects.get_or_create(node=node, date_time=date_time_aware, defaults=defaults)
+
+                responses.append(f'Node {node.pk} in date {date_time_aware} data created successfully!')
+            except Exception as e:
+                raise serializers.ValidationError({"error": str(e)})
+        return responses
+                raise serializers.ValidationError({"error": str(e)})
+        return responses

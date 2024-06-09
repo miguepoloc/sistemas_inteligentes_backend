@@ -2,17 +2,19 @@
 File for the Nodes views.
 """
 
-from core.pagination import CustomPaginationClass
+from django.core.files.uploadedfile import UploadedFile
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.pagination import CustomPaginationClass
 from nodes.models import Nodes, NodesStorage, WeatherStation
 from nodes.serializers import (
     DataWeatherStationSerializer,
     NodesSerializer,
     NodesStorageSerializer,
+    NodesStorageTxtSerializer,
     WeatherStationSerializer,
 )
 
@@ -180,6 +182,41 @@ class NodesStorageView(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'messages': responses}, status=status.HTTP_201_CREATED)
+
+
+class NodesStorageTxtView(APIView):
+    """
+    A view for storing text documents in the system.
+
+    This view handles the HTTP POST request for uploading a text document to the system.
+    The document is expected to be provided as a file in the request data.
+
+    Attributes:
+        None
+
+    Methods:
+        post(request): Handles the HTTP POST request for uploading a text document.
+    """
+
+    def post(self, request) -> Response:
+        """
+        Handles the HTTP POST request for uploading a text document.
+
+        Args:
+            request (Request): The HTTP request object.
+
+        Returns:
+            Response: The HTTP response object.
+        """
+        document: UploadedFile = request.data.get('document')
+        if not document:
+            return Response({'message': 'Please provide a document!'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = NodesStorageTxtSerializer(data={'document': document})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Document uploaded successfully!'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class WeatherStationView(APIView):
