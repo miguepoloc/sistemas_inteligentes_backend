@@ -88,6 +88,7 @@ class NodesStorage(BaseModel):
 
         db_table = 'nodes_storage'
         ordering = ['-date_time']
+        unique_together = ['node', 'date_time']
 
 
 class WeatherStation(BaseModel):
