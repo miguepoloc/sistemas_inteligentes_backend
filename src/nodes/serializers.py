@@ -2,6 +2,11 @@
 File with serializers for the nodes app.
 """
 
+from datetime import datetime
+from typing import Union
+
+from django.core.files.uploadedfile import UploadedFile
+from django.utils import timezone
 from rest_framework import serializers
 
 from nodes.models import Nodes, NodesStorage, WeatherStation
@@ -55,7 +60,7 @@ class DataWeatherStationSerializer(serializers.ModelSerializer):
         model = WeatherStation
         fields = '__all__'
 
-    def create(self, validated_data: dict) -> [WeatherStation, None]:
+    def create(self, validated_data: dict) -> Union[WeatherStation, None]:
         """
         Create a new DataWeatherStation object.
 
@@ -72,7 +77,7 @@ class DataWeatherStationSerializer(serializers.ModelSerializer):
             - Otherwise, a new WeatherStation object will be created using the 'validated_data' and returned.
         """
         if WeatherStation.objects.filter(date=validated_data['date']).exists():
-            return
+            return None
         return WeatherStation.objects.create(**validated_data)
 
 
@@ -138,3 +143,81 @@ class WeatherStationSerializer(serializers.Serializer):
         if not data_weather_station_serializer.is_valid():
             raise serializers.ValidationError(data_weather_station_serializer.errors)
         return data_weather_station_serializer.save()
+
+
+class NodesStorageTxtSerializer(serializers.Serializer):
+    """
+    Serializer class for handling the storage of nodes data from a .txt file.
+
+    Attributes:
+        document (FileField): The file field for the document.
+    """
+
+    document = serializers.FileField()
+
+    def validate_document(self, value: UploadedFile) -> UploadedFile:
+        """
+        Validates the uploaded document file.
+
+        Args:
+            value (UploadedFile): The uploaded file object.
+
+        Returns:
+            UploadedFile: The validated file object.
+
+        Raises:
+            serializers.ValidationError: If the file is not in .txt format.
+        """
+        if value.name.endswith('.txt'):
+            return value
+        raise serializers.ValidationError("The file must be in .txt format")
+
+    def create(self, validated_data: dict[str, UploadedFile]) -> list[str]:
+        """
+        Create method to process and save data from validated_data.
+
+        Args:
+            validated_data (dict[str, UploadedFile]): The validated data containing the uploaded file.
+
+        Returns:
+            list[str]: A list of responses indicating the success or failure of data creation.
+
+        Raises:
+            serializers.ValidationError: If an error occurs during data creation.
+        """
+        txt_data: bytes = validated_data['document'].read()
+        responses: list = []
+        for item in str(txt_data).split("\\n"):
+            if not item or item.startswith("b'ID_NODO") or item == "'":
+                continue
+            data: list[str] = item.split(';')
+            try:
+                defaults: dict[str, str] = {
+                    "temperature": data[2],
+                    "humidity": data[3],
+                    "pressure": data[4],
+                    "altitude": data[5],
+                    "humidity_hd38": data[6],
+                    "humidity_soil": data[7],
+                    "temperature_soil": data[8],
+                    "conductivity_soil": data[9],
+                    "ph_soil": data[10],
+                    "nitrogen_soil": data[11],
+                    "phosphorus_soil": data[12],
+                    "potassium_soil": data[13],
+                    "battery_level": data[14],
+                }
+                date_time_naive: datetime = datetime.strptime(data[1], "%Y-%m-%dT%H:%M:%S")
+                date_time_aware: datetime = timezone.make_aware(date_time_naive)
+
+                defaults["date_time"] = date_time_aware
+
+                node: Nodes = Nodes.objects.get(id=int(data[0]))  # Get the node instance
+                defaults['node'] = node  # Add the node instance to the defaults dictionary
+
+                NodesStorage.objects.get_or_create(node=node, date_time=date_time_aware, defaults=defaults)
+
+                responses.append(f'Node {node.pk} in date {date_time_aware} data created successfully!')
+            except Exception as e:
+                raise serializers.ValidationError({"error": str(e)})
+        return responses

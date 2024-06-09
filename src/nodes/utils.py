@@ -1,3 +1,6 @@
+"""
+This module contains utility functions that are used by the nodes.
+"""
 import io
 
 import openpyxl
@@ -28,15 +31,15 @@ def excel_to_json(excel_bytes: bytes) -> list[dict]:
     """
 
     # Load the workbook from the BytesIO object
-    wb: openpyxl.Workbook = openpyxl.load_workbook(filename=io.BytesIO(excel_bytes))
+    workbook: openpyxl.Workbook = openpyxl.load_workbook(filename=io.BytesIO(excel_bytes))
 
     # Get the active worksheet
-    ws: openpyxl.worksheet.worksheet.Worksheet = wb.active
+    worksheet: openpyxl.worksheet.worksheet.Worksheet = workbook.active
 
-    keys_units: list = [cell.value for cell in ws[1]]
+    keys_units: list = [cell.value for cell in worksheet[1]]
 
     # Get the keys from the second row of the worksheet
-    keys_values: list = [cell.value for cell in ws[2]]
+    keys_values: list = [cell.value for cell in worksheet[2]]
 
     keys_units[0] = keys_values[0] + " [%Y-%m-%d %H:%M:%S]"
     keys_units[len(keys_units) - 1] = keys_values[len(keys_values) - 1]
@@ -71,7 +74,7 @@ def excel_to_json(excel_bytes: bytes) -> list[dict]:
     json_data: list = []
 
     # Convert each row in the worksheet to a JSON object
-    for row in ws.iter_rows(min_row=3, values_only=True):
+    for row in worksheet.iter_rows(min_row=3, values_only=True):
         obj: dict = {key: value if value != '' else None for key, value in zip(keys_units, row) if key is not None}
         data: dict = {keys_name[i]: value for i, value in enumerate(obj.values())}
         data_units: dict = {keys_name[i]: units_dict[key] for i, key in enumerate(units_dict.keys())}

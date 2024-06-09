@@ -2,8 +2,9 @@
 File that contains the Django models for the nodes app.
 """
 
-from core.models import BaseModel
 from django.db import models
+
+from core.models import BaseModel
 
 
 class Nodes(BaseModel):
@@ -88,6 +89,7 @@ class NodesStorage(BaseModel):
 
         db_table = 'nodes_storage'
         ordering = ['-date_time']
+        unique_together = ['node', 'date_time']
 
 
 class WeatherStation(BaseModel):
