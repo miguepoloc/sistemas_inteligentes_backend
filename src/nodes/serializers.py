@@ -146,36 +146,53 @@ class WeatherStationSerializer(serializers.Serializer):
 
 
 class NodesStorageTxtSerializer(serializers.Serializer):
+    """
+    Serializer class for handling the storage of nodes data from a .txt file.
+
+    Attributes:
+        document (FileField): The file field for the document.
+    """
+
     document = serializers.FileField()
 
     def validate_document(self, value: UploadedFile) -> UploadedFile:
-            """
-            Validates the uploaded document file.
+        """
+        Validates the uploaded document file.
 
-            Args:
-                value (UploadedFile): The uploaded file object.
+        Args:
+            value (UploadedFile): The uploaded file object.
 
-            Returns:
-                UploadedFile: The validated file object.
+        Returns:
+            UploadedFile: The validated file object.
 
-            Raises:
-                serializers.ValidationError: If the file is not in .txt format.
-            """
-            if value.name.endswith('.txt'):
-                return value
-            raise serializers.ValidationError("The file must be in .txt format")
+        Raises:
+            serializers.ValidationError: If the file is not in .txt format.
+        """
+        if value.name.endswith('.txt'):
+            return value
+        raise serializers.ValidationError("The file must be in .txt format")
 
-    def create(self, validated_data) -> list:
-        txt_data = validated_data['document'].read()
-        responses = []
+    def create(self, validated_data: dict[str, UploadedFile]) -> list[str]:
+        """
+        Create method to process and save data from validated_data.
+
+        Args:
+            validated_data (dict[str, UploadedFile]): The validated data containing the uploaded file.
+
+        Returns:
+            list[str]: A list of responses indicating the success or failure of data creation.
+
+        Raises:
+            serializers.ValidationError: If an error occurs during data creation.
+        """
+        txt_data: bytes = validated_data['document'].read()
+        responses: list = []
         for item in str(txt_data).split("\\n"):
             if not item or item.startswith("b'ID_NODO") or item == "'":
                 continue
-            data = item.split(';')
+            data: list[str] = item.split(';')
             try:
-                node = int(data[0])
-
-                defaults = {
+                defaults: dict[str, str] = {
                     "temperature": data[2],
                     "humidity": data[3],
                     "pressure": data[4],
@@ -190,20 +207,17 @@ class NodesStorageTxtSerializer(serializers.Serializer):
                     "potassium_soil": data[13],
                     "battery_level": data[14],
                 }
-                date_time_naive = datetime.strptime(data[1], "%Y-%m-%dT%H:%M:%S")
-                date_time_aware = timezone.make_aware(date_time_naive)
+                date_time_naive: datetime = datetime.strptime(data[1], "%Y-%m-%dT%H:%M:%S")
+                date_time_aware: datetime = timezone.make_aware(date_time_naive)
 
                 defaults["date_time"] = date_time_aware
 
-                node = Nodes.objects.get(id=node)  # Obtiene la instancia del nodo
-
-                defaults['node'] = node  # Asigna la instancia del nodo a data_storage
+                node: Nodes = Nodes.objects.get(id=int(data[0]))  # Get the node instance
+                defaults['node'] = node  # Add the node instance to the defaults dictionary
 
                 NodesStorage.objects.get_or_create(node=node, date_time=date_time_aware, defaults=defaults)
 
                 responses.append(f'Node {node.pk} in date {date_time_aware} data created successfully!')
             except Exception as e:
-                raise serializers.ValidationError({"error": str(e)})
-        return responses
                 raise serializers.ValidationError({"error": str(e)})
         return responses
