@@ -3,15 +3,23 @@ File for the Nodes views.
 """
 
 import datetime
+from typing import Union
 
+from django.core.files.uploadedfile import UploadedFile
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.pagination import CustomPaginationClass
-from nodes.models import Nodes, NodesStorage
-from nodes.serializers import NodesSerializer, NodesStorageSerializer
+from nodes.models import Nodes, NodesStorage, WeatherStation
+from nodes.serializers import (
+    DataWeatherStationSerializer,
+    NodesSerializer,
+    NodesStorageSerializer,
+    NodesStorageTxtSerializer,
+    WeatherStationSerializer,
+)
 
 
 class NodesView(APIView):
@@ -178,6 +186,12 @@ class NodesStorageView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            data_node: Union[NodesStorage, None] = NodesStorage.objects.filter(
+                node=data_storage['node'], date_time=data_storage['date_time']
+            ).first()
+            if data_node:
+                continue
+
             serializer = self.serializer_class(data=data_storage)
             if serializer.is_valid():
                 serializer.save()
@@ -189,3 +203,93 @@ class NodesStorageView(APIView):
             {'messages': responses, "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
             status=status.HTTP_201_CREATED,
         )
+
+
+class NodesStorageTxtView(APIView):
+    """
+    A view for storing text documents in the system.
+
+    This view handles the HTTP POST request for uploading a text document to the system.
+    The document is expected to be provided as a file in the request data.
+
+    Attributes:
+        None
+
+    Methods:
+        post(request): Handles the HTTP POST request for uploading a text document.
+    """
+
+    def post(self, request) -> Response:
+        """
+        Handles the HTTP POST request for uploading a text document.
+
+        Args:
+            request (Request): The HTTP request object.
+
+        Returns:
+            Response: The HTTP response object.
+        """
+        document: UploadedFile = request.data.get('document')
+        if not document:
+            return Response({'message': 'Please provide a document!'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = NodesStorageTxtSerializer(data={'document': document})
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Document uploaded successfully!'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WeatherStationView(APIView):
+    """
+    A Django REST Framework view for the Nodes model.
+
+    Attributes:
+        permission_classes (tuple): A tuple of permission classes that the view requires.
+        serializer_class (NodesSerializer): The serializer class to use for serializing and deserializing data.
+    """
+
+    permission_classes = (AllowAny,)
+    pagination_class = CustomPaginationClass
+    get_queryset = WeatherStation.objects.all()
+
+    def post(self, request) -> Response:
+        """
+        Handles POST requests and uploads a document.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            Response: A response indicating whether the document was uploaded successfully or not.
+        """
+        document = request.data.get('document')
+        serializer = WeatherStationSerializer(data={'document': document})
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Document uploaded successfully"}, status=status.HTTP_201_CREATED)
+
+        return Response(
+            {"error": "Error uploading document", "details": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    def get(self, request) -> Response:
+        """
+        Handles GET requests and returns a serialized response of all documents.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            Response: A serialized response of all documents.
+        """
+        paginator = self.pagination_class()
+
+        page = paginator.paginate_queryset(self.get_queryset, request)
+
+        if page is not None:
+            serializer = DataWeatherStationSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = self.serializer_class(self.get_queryset, many=True)
+        return Response(serializer.data)
