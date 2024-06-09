@@ -2,6 +2,8 @@
 File for the Nodes views.
 """
 
+from typing import Union
+
 from django.core.files.uploadedfile import UploadedFile
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -173,6 +175,12 @@ class NodesStorageView(APIView):
                 }
             except IndexError:
                 return Response({'message': 'Format data is not correct!'}, status=status.HTTP_400_BAD_REQUEST)
+
+            data_node: Union[NodesStorage, None] = NodesStorage.objects.filter(
+                node=data_storage['node'], date_time=data_storage['date_time']
+            ).first()
+            if data_node:
+                continue
 
             serializer = self.serializer_class(data=data_storage)
             if serializer.is_valid():

@@ -77,7 +77,7 @@ class DataWeatherStationSerializer(serializers.ModelSerializer):
             - Otherwise, a new WeatherStation object will be created using the 'validated_data' and returned.
         """
         if WeatherStation.objects.filter(date=validated_data['date']).exists():
-            return
+            return None
         return WeatherStation.objects.create(**validated_data)
 
 
