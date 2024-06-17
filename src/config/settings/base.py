@@ -24,7 +24,7 @@ BASE_APPS = [
     "django.contrib.sites",
 ]
 
-LOCAL_APPS = ["core", "user", "authentication", "nodes", "reports"]
+LOCAL_APPS = ["core", "user", "authentication", "nodes", "reports", "ripener"]
 
 THIRD_APPS = [
     'corsheaders',

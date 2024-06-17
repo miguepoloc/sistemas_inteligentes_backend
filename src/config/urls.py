@@ -16,6 +16,7 @@ urlpatterns = [
     path("api/auth/", include("authentication.urls")),
     path("api/nodes/", include("nodes.urls")),
     path("api/reports/", include("reports.urls")),
+    path("api/ripener/", include("ripener.urls")),
     # Documentation with drf_spectacular swagger
     # YOUR PATTERNS
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
