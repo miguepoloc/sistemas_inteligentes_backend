@@ -64,9 +64,9 @@ class MachineView(APIView):
         """
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            instance = serializer.save()
             return Response(
-                {'message': 'machine session created successfully!', 'machine_id': serializer.id},
+                {'message': 'machine session created successfully!', 'machine_id': instance.id},
                 status=status.HTTP_201_CREATED,
             )
         return Response(
@@ -171,7 +171,6 @@ class NodesView(APIView):
             return Response(
                 {
                     'message': f'Node {machine_info.name} with id {machine_info.id} updated successfully!',
-                    'machine_id': serializer.id,
                 },
                 status=status.HTTP_200_OK,
             )
