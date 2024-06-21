@@ -2,10 +2,13 @@
 File for the Nodes views.
 """
 
-import datetime
+from datetime import datetime
 from typing import Union
 
+from django.core.exceptions import FieldError
 from django.core.files.uploadedfile import UploadedFile
+from django.db.models import QuerySet
+from django.utils.timezone import make_aware
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -112,11 +115,38 @@ class NodesStorageView(APIView):
     serializer_class = NodesStorageSerializer
     pagination_class = CustomPaginationClass
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[NodesStorage]:
         """
-        Returns a filtered queryset of NodesStorage objects.
+        Returns the queryset of NodesStorage objects based on the provided query parameters.
+
+        Returns:
+            QuerySet[NodesStorage]: The filtered queryset of NodesStorage objects.
         """
-        return NodesStorage.objects.filter(is_active=True)
+
+        queryset: QuerySet[NodesStorage] = NodesStorage.objects.filter(is_active=True)
+        node_id: str = self.request.query_params.get('node_id')
+        start_date: str = self.request.query_params.get('start_date')
+        end_date: str = self.request.query_params.get('end_date')
+        order_by: str = self.request.query_params.get('order_by', '-date_time')  # Default ordering
+
+        if node_id:
+            queryset = queryset.filter(node_id=node_id)
+            if not queryset.exists():
+                raise ValueError(f"Node with id {node_id} does not exist!")
+        if start_date and end_date:
+            if start_date > end_date:
+                raise ValueError("Start date cannot be greater than end date!")
+
+            start: datetime = datetime.strptime(start_date, '%d-%m-%Y').replace(hour=0, minute=0, second=0)
+            end: datetime = datetime.strptime(end_date, '%d-%m-%Y').replace(hour=23, minute=59, second=59)
+            queryset = queryset.filter(date_time__range=(make_aware(start), make_aware(end)))
+
+        try:
+            queryset = queryset.order_by(order_by)
+        except FieldError:
+            queryset = queryset.order_by('-date_time')
+
+        return queryset
 
     def get(self, request) -> Response:
         """
@@ -128,7 +158,11 @@ class NodesStorageView(APIView):
         Returns:
         - Response: The serialized data response.
         """
-        queryset = self.get_queryset().order_by("-created_at")
+        try:
+            queryset = self.get_queryset()
+        except ValueError as error:
+            return Response({'message': str(error)}, status=status.HTTP_400_BAD_REQUEST)
+
         paginator = self.pagination_class()
 
         page = paginator.paginate_queryset(queryset, request)
@@ -152,7 +186,7 @@ class NodesStorageView(APIView):
         request_data = request.body.decode('utf-8').split('\n') if request.body else None
         if not request_data:
             return Response(
-                {'message': 'Please provide data!', "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+                {'message': 'Please provide data!', "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -181,7 +215,7 @@ class NodesStorageView(APIView):
                 return Response(
                     {
                         'message': 'Format data is not correct!',
-                        "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
@@ -200,7 +234,7 @@ class NodesStorageView(APIView):
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {'messages': responses, "datetime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
+            {'messages': responses, "datetime": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
             status=status.HTTP_201_CREATED,
         )
 
