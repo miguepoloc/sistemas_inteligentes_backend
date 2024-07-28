@@ -8,7 +8,7 @@ app = App()
 
 account_id_deploy = app.node.try_get_context("account_id_deploy")
 stack_name = app.node.try_get_context("STACK_NAME_DEPLOY")
-env_us_west_2 = Environment(account=account_id_deploy, region="us-west-2")
+env_us_west_2 = Environment(account=account_id_deploy, region="us-east-2")
 
 cluster_stack_name = app.node.try_get_context("cluster_stack_name") or "ClusterStack"
 
